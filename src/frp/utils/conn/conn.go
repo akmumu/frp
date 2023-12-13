@@ -38,6 +38,7 @@ func Listen(bindAddr string, bindPort int64) (l *Listener, err error) {
 		return l, err
 	}
 
+	// TODO: 此物为返回值，带着我们监听消息的关键信息
 	l = &Listener{
 		addr:      listener.Addr(),
 		l:         listener,
@@ -45,6 +46,7 @@ func Listen(bindAddr string, bindPort int64) (l *Listener, err error) {
 		closeFlag: false,
 	}
 
+	// TODO: 启动一个协程，用于监听客户端连接,不断把获取到的链接放入到channel中，供后面使用
 	go func() {
 		for {
 			conn, err := l.l.AcceptTCP()
@@ -156,6 +158,8 @@ func Join(c1 *Conn, c2 *Conn) {
 	}
 
 	wait.Add(2)
+	// TODO 对于client来说，是本地的消息和server的消息进行交换
+	// TODO 如果是server，则是client的消息与用户的消息进行交换
 	go pipe(c1, c2)
 	go pipe(c2, c1)
 	wait.Wait()

@@ -69,10 +69,12 @@ func (p *ProxyClient) GetRemoteConn(addr string, port int64) (c *conn.Conn, err 
 }
 
 func (p *ProxyClient) StartTunnel(serverAddr string, serverPort int64) (err error) {
+	// TODO 根据配置中的一个本地端口，链接一下，比如是22或者80啥的
 	localConn, err := p.GetLocalConn()
 	if err != nil {
 		return
 	}
+	// TODO 根据远程端口，也链接上
 	remoteConn, err := p.GetRemoteConn(serverAddr, serverPort)
 	if err != nil {
 		return
@@ -81,6 +83,8 @@ func (p *ProxyClient) StartTunnel(serverAddr string, serverPort int64) (err erro
 	// l means local, r means remote
 	log.Debug("Join two conns, (l[%s] r[%s]) (l[%s] r[%s])", localConn.GetLocalAddr(), localConn.GetRemoteAddr(),
 		remoteConn.GetLocalAddr(), remoteConn.GetRemoteAddr())
+	// TODO 核心中的核心，两个连接都链接上了，让他俩在一起，开始互相数据
+	// TODO 思考一下，其实啊，这边的client才像是个server，而我们的server像是个二级代理分销商
 	go conn.Join(localConn, remoteConn)
 	return nil
 }

@@ -64,10 +64,12 @@ func (p *ProxyServer) Start() (err error) {
 	p.Status = consts.Working
 
 	// start a goroutine for listener to accept user connection
+	// TODO 启动协程接受用户连接
 	go func() {
 		for {
 			// block
 			// if listener is closed, err returned
+			// TODO 这里是放入channel
 			c, err := p.listener.GetConn()
 			if err != nil {
 				log.Info("ProxyName [%s], listener is closed", p.Name)
@@ -107,6 +109,7 @@ func (p *ProxyServer) Start() (err error) {
 	}()
 
 	// start another goroutine for join two conns from client and user
+	// TODO 启动的地方同时启动协程，不断的连接用户和客户端
 	go func() {
 		for {
 			cliConn, ok := <-p.cliConnChan
@@ -132,6 +135,7 @@ func (p *ProxyServer) Start() (err error) {
 			// l means local, r means remote
 			log.Debug("Join two conns, (l[%s] r[%s]) (l[%s] r[%s])", cliConn.GetLocalAddr(), cliConn.GetRemoteAddr(),
 				userConn.GetLocalAddr(), userConn.GetRemoteAddr())
+			// TODO 熟悉的地方，与客户端干活类似，一会后面会说
 			go conn.Join(cliConn, userConn)
 		}
 	}()

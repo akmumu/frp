@@ -27,13 +27,16 @@ import (
 	"frp/utils/log"
 )
 
+// TODO: 处理刚才server启动好的一个server中的数据
 func ProcessControlConn(l *conn.Listener) {
 	for {
+		// TODO: 不断获取的连接
 		c, err := l.GetConn()
 		if err != nil {
 			return
 		}
 		log.Debug("Get one new conn, %v", c.GetRemoteAddr())
+		// TODO: 启动一个goroutine来处理这个连接
 		go controlWorker(c)
 	}
 }
@@ -49,6 +52,14 @@ func controlWorker(c *conn.Conn) {
 	}
 	log.Debug("get: %s", res)
 
+	/**
+	TODO 可以看到这是客户端发过来的消息，主要有一个proxyname，对应配置文件中那一对
+	type ClientCtlReq struct {
+		Type      int64  `json:"type"`
+		ProxyName string `json:"proxy_name"`
+		Passwd    string `json:"passwd"`
+	}
+	*/
 	clientCtlReq := &msg.ClientCtlReq{}
 	clientCtlRes := &msg.ClientCtlRes{}
 	if err := json.Unmarshal([]byte(res), &clientCtlReq); err != nil {
@@ -79,6 +90,7 @@ func controlWorker(c *conn.Conn) {
 	}
 
 	// other messages is from server to client
+	// TODO 这个proxy server怎么来的呢，在配置加载的时候
 	s, ok := server.ProxyServers[clientCtlReq.ProxyName]
 	if !ok {
 		log.Warn("ProxyName [%s] is not exist", clientCtlReq.ProxyName)
@@ -86,6 +98,7 @@ func controlWorker(c *conn.Conn) {
 	}
 
 	// read control msg from client
+	// TODO:这块是处理一些内部控制相关的消息，比如c到s的心跳检测
 	go readControlMsgFromClient(s, c)
 
 	serverCtlReq := &msg.ClientCtlReq{}
@@ -138,6 +151,7 @@ func checkProxy(req *msg.ClientCtlReq, c *conn.Conn) (succ bool, info string, ne
 		}
 
 		// start proxy and listen for user conn, no block
+		// TODO 启动proxy，并监听用户连接，不阻塞，其中client给他发送的一些代理们，这里会进行处理
 		err := s.Start()
 		if err != nil {
 			info = fmt.Sprintf("ProxyName [%s], start proxy error: %v", req.ProxyName, err.Error())
@@ -153,7 +167,7 @@ func checkProxy(req *msg.ClientCtlReq, c *conn.Conn) (succ bool, info string, ne
 			log.Warn("ProxyName [%s], is not working when it gets one new work conn", req.ProxyName)
 			return
 		}
-
+		// TODO 干活的链接，我们把他也扔到队列里，然后proxy server去处理
 		s.GetNewCliConn(c)
 	} else {
 		info = fmt.Sprintf("ProxyName [%s], type [%d] unsupport", req.ProxyName, req.Type)

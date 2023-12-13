@@ -94,12 +94,14 @@ func main() {
 	var wait sync.WaitGroup
 	wait.Add(len(client.ProxyClients))
 
+	// TODO: 这个东西是配置文件中写的，比如咱要把本机的几个端口给暴露出去
+	// TODO: 每一个配置开个携程来处理
 	for _, client := range client.ProxyClients {
 		go ControlProcess(client, &wait)
 	}
 
 	log.Info("Start frpc success")
-
+	// TODO：我们暴露几个端口，就是等待几个的写成干完活，但一会我们可以看到，里面也是死循环
 	wait.Wait()
 	log.Warn("All proxy exit!")
 }

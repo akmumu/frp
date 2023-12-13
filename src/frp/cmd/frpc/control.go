@@ -34,6 +34,7 @@ var heartBeatTimer *time.Timer = nil
 func ControlProcess(cli *client.ProxyClient, wait *sync.WaitGroup) {
 	defer wait.Done()
 
+	// TODO: 客户端链接server,内部包含心跳，建立链接后返回一个链接
 	c, err := loginToServer(cli)
 	if err != nil {
 		log.Error("ProxyName [%s], connect to server failed!", cli.Name)
@@ -69,12 +70,13 @@ func ControlProcess(cli *client.ProxyClient, wait *sync.WaitGroup) {
 			log.Warn("ProxyName [%s], read from server error, %v", cli.Name, err)
 			continue
 		}
-
+		// TODO :可以看到使用的json格式
 		clientCtlRes := &msg.ClientCtlRes{}
 		if err := json.Unmarshal([]byte(content), clientCtlRes); err != nil {
 			log.Warn("Parse err: %v : %s", err, content)
 			continue
 		}
+		// TODO: 如果是心跳需要感受一下，然后继续下一条的数据感受
 		if consts.SCHeartBeatRes == clientCtlRes.GeneralRes.Code {
 			if heartBeatTimer != nil {
 				log.Debug("Client rcv heartbeat response")
@@ -84,7 +86,7 @@ func ControlProcess(cli *client.ProxyClient, wait *sync.WaitGroup) {
 			}
 			continue
 		}
-
+		// TODO: 不是心跳，这是什么，这里是核心，启动与服务端的数据隧道，等待不断地交换消息
 		cli.StartTunnel(client.ServerAddr, client.ServerPort)
 	}
 }
@@ -154,6 +156,7 @@ func startHeartBeat(c *conn.Conn) {
 
 	log.Debug("Start to send heartbeat")
 	for {
+		// TODO: 死循环，20秒一次心跳
 		time.Sleep(time.Duration(client.HeartBeatInterval) * time.Second)
 		if c != nil && !c.IsClosed() {
 			log.Debug("Send heartbeat to server")

@@ -90,6 +90,7 @@ func main() {
 
 	log.InitLog(server.LogWay, server.LogFile, server.LogLevel)
 
+	// TODO:在本机IP中监听端口
 	l, err := conn.Listen(server.BindAddr, server.BindPort)
 	if err != nil {
 		log.Error("Create listener error, %v", err)
@@ -97,5 +98,6 @@ func main() {
 	}
 
 	log.Info("Start frps success")
+	// TODO: 启动一个协程处理客户端消息
 	ProcessControlConn(l)
 }
